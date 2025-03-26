@@ -123,15 +123,14 @@ def detect_gps_spoofing(df: pd.DataFrame) -> list[pd.DataFrame]:
     loc_anomalies = analyse_loc_anomalies(df)
     speed_anomalies = detect_speed_anomalies(df)
     # neighbouring_vessel_anomalies = compare_neighbouring_vessels(df)
-    # print(
-    #     f"Neighbouring vessel anomalies: {len(neighbouring_vessel_anomalies)}")
 
     # all_anomalies = pd.concat(
     #     [loc_anomalies, speed_anomalies, neighbouring_vessel_anomalies])
-    # all_anomalies = all_anomalies.drop_duplicates(
-    #     subset=['MMSI', '# Timestamp'])
+    all_anomalies = pd.concat([loc_anomalies, speed_anomalies])
+    all_anomalies = all_anomalies.drop_duplicates(
+        subset=['MMSI', '# Timestamp'])
 
-    # return len(all_anomalies)
+    return len(all_anomalies)
 
 
 def monitor(func, *args, **kwargs):
@@ -162,8 +161,6 @@ def monitor(func, *args, **kwargs):
 if __name__ == '__main__':
     df = load_data('data/aisdk-2024-09-11.csv')
 
-    # Downsample for quicker processing
-    df = df.sample(n=10_000_000, random_state=42)
     df = preprocess_data(df)
 
     chunk_sizes = [200_000, 300_000, 400_000]
@@ -194,6 +191,7 @@ if __name__ == '__main__':
                 )
             par_time_taken = time.time() - time_start
 
+            # Extract CPU and Memory usage from each chunk
             for result, cpu_usage, mem_usage in chunk_results:
                 cpu_usages.append(cpu_usage)
                 mem_usages.append(mem_usage)
